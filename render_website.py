@@ -1,10 +1,9 @@
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
 import os
 import math
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from livereload import Server, shell
+from livereload import Server
 from more_itertools import chunked
 
 
@@ -36,16 +35,14 @@ def on_reload():
         ) as file:
             file.write(rendered_page)
 
+
 if __name__ == '__main__':
     env = Environment(
-    loader=FileSystemLoader('.'),
-    autoescape=select_autoescape(['html', 'xml'])
+        loader=FileSystemLoader('.'),
+        autoescape=select_autoescape(['html', 'xml'])
     )
     on_reload()
 
     server = Server()
     server.watch('template.html', on_reload)
     server.serve(root='.', default_filename="pages/index1.html")
-
-# server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
-# server.serve_forever()
