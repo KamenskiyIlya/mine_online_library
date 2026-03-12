@@ -1,5 +1,6 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
+import os
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server, shell
@@ -8,15 +9,21 @@ from more_itertools import chunked
 
 def on_reload():
     template = env.get_template('template.html')
+    os.makedirs('pages', exist_ok=True)
     with open('meta_data.json', 'r', encoding="utf-8") as file:
         books_data = file.read()
     books = json.loads(books_data)
-    divided_books = list(chunked(books, 2))
+    for page_num, books_by_pages in enumerate(list(chunked(books, 10)), 1):
+        books_by_rows = list(chunked(books_by_pages, 2))
 
-    rendered_page = template.render(book_rows=divided_books)
+        rendered_page = template.render(book_rows=books_by_rows)
 
-    with open('index.html', 'w', encoding="utf-8") as file:
-        file.write(rendered_page)
+        with open(
+            f'pages/index{page_num}.html',
+            'w',
+            encoding="utf-8"
+        ) as file:
+            file.write(rendered_page)
 
 if __name__ == '__main__':
     env = Environment(
