@@ -1,24 +1,53 @@
 import json
 import os
 import math
+import argparse
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
 from more_itertools import chunked
 
 
-BOOK_ON_PAGE = 10
 BOOK_IN_ROW = 2
 
 
-def on_reload():
-    template = env.get_template('template.html')
+def get_cmd_args():
+    parser = argparse.ArgumentParser(
+        description='Запускает локальный сервер и отслеживает изменения.',
+    )
+    parser.add_argument(
+        '-t',
+        '--template',
+        type=str,
+        default='template.html',
+        help='Путь к шаблону для отрисовки и отслеживания с расширением.'
+    )
+    parser.add_argument(
+        '-bf',
+        '--books_file',
+        type=str,
+        default='meta_data.json',
+        help='Имя и путь до файла с данными о книгах.',
+    )
+    parser.add_argument(
+        '-bop',
+        '--book_on_page',
+        type=int,
+        default=10,
+        help='Количество книг отображаемых на одной странице.',
+    )
+    args = parser.parse_args()
+    return args
+
+
+def on_reload(book_on_page, template, books_file):
+    template = env.get_template(template)
     os.makedirs('pages', exist_ok=True)
-    with open('meta_data.json', 'r', encoding="utf-8") as file:
+    with open(books_file, 'r', encoding="utf-8") as file:
         books_data = file.read()
     books = json.loads(books_data)
-    books_by_pages = list(chunked(books, BOOK_ON_PAGE))
-    pages_number = math.ceil(len(books) / BOOK_ON_PAGE)
+    books_by_pages = list(chunked(books, book_on_page))
+    pages_number = math.ceil(len(books) / book_on_page)
 
     for page_num, books_on_page in enumerate(books_by_pages, 1):
         books_by_rows = list(chunked(books_on_page, BOOK_IN_ROW))
@@ -41,8 +70,15 @@ if __name__ == '__main__':
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html', 'xml'])
     )
-    on_reload()
+
+    args = get_cmd_args()
+
+    on_reload(
+        book_on_page=args.book_on_page,
+        template=args.template,
+        books_file=args.books_file,
+    )
 
     server = Server()
-    server.watch('template.html', on_reload)
+    server.watch(args.template, on_reload)
     server.serve(root='.', default_filename="pages/index1.html")
