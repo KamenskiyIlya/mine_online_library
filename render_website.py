@@ -63,8 +63,7 @@ def on_reload(book_on_page, template, books_file):
         ) as file:
             file.write(rendered_page)
 
-
-if __name__ == '__main__':
+def main():
     env = Environment(
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html', 'xml'])
@@ -81,3 +80,6 @@ if __name__ == '__main__':
     server = Server()
     server.watch(args.template, on_reload)
     server.serve(root='.', default_filename="pages/index1.html")
+
+if __name__ == '__main__':
+    main()
