@@ -44,8 +44,7 @@ def on_reload(book_on_page, template, books_file):
     template = env.get_template(template)
     os.makedirs('pages', exist_ok=True)
     with open(books_file, 'r', encoding="utf-8") as file:
-        books_data = file.read()
-    books = json.loads(books_data)
+        books = json.load(file)
     books_by_pages = list(chunked(books, book_on_page))
     pages_number = math.ceil(len(books) / book_on_page)
 
