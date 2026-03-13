@@ -16,8 +16,8 @@ def get_cmd_args():
         description='Запускает локальный сервер и отслеживает изменения.',
     )
     parser.add_argument(
-        '-t',
-        '--template',
+        '-tp',
+        '--template_path',
         type=str,
         default='template.html',
         help='Путь к шаблону для отрисовки и отслеживания с расширением.'
@@ -41,7 +41,6 @@ def get_cmd_args():
 
 
 def on_reload(book_on_page, template, books_file):
-    template = env.get_template(template)
     os.makedirs('pages', exist_ok=True)
     with open(books_file, 'r', encoding='utf-8') as file:
         books = json.load(file)
@@ -64,21 +63,23 @@ def on_reload(book_on_page, template, books_file):
             file.write(rendered_page)
 
 def main():
+    args = get_cmd_args()
+
     env = Environment(
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html', 'xml'])
     )
 
-    args = get_cmd_args()
+    template = env.get_template(args.template_path)
 
     on_reload(
         book_on_page=args.book_on_page,
-        template=args.template,
+        template=template,
         books_file=args.books_file,
     )
 
     server = Server()
-    server.watch(args.template, on_reload)
+    server.watch(args.template_path, on_reload)
     server.serve(root='.', default_filename='pages/index1.html')
 
 if __name__ == '__main__':
