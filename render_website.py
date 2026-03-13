@@ -43,7 +43,7 @@ def get_cmd_args():
 def on_reload(book_on_page, template, books_file):
     template = env.get_template(template)
     os.makedirs('pages', exist_ok=True)
-    with open(books_file, 'r', encoding="utf-8") as file:
+    with open(books_file, 'r', encoding='utf-8') as file:
         books = json.load(file)
     books_by_pages = list(chunked(books, book_on_page))
     pages_number = math.ceil(len(books) / book_on_page)
@@ -59,7 +59,7 @@ def on_reload(book_on_page, template, books_file):
         with open(
             f'pages/index{page_num}.html',
             'w',
-            encoding="utf-8"
+            encoding='utf-8'
         ) as file:
             file.write(rendered_page)
 
@@ -79,7 +79,7 @@ def main():
 
     server = Server()
     server.watch(args.template, on_reload)
-    server.serve(root='.', default_filename="pages/index1.html")
+    server.serve(root='.', default_filename='pages/index1.html')
 
 if __name__ == '__main__':
     main()
