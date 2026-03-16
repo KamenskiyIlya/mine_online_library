@@ -40,7 +40,18 @@ def get_cmd_args():
     return args
 
 
-def on_reload(book_on_page, template, books_file):
+def on_reload():
+    args = get_cmd_args()
+
+    env = Environment(
+        loader=FileSystemLoader('.'),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+
+    template = env.get_template(args.template_path)
+    book_on_page=args.book_on_page
+    books_file=args.books_file
+
     os.makedirs('pages', exist_ok=True)
     with open(books_file, 'r', encoding='utf-8') as file:
         books = json.load(file)
@@ -62,24 +73,13 @@ def on_reload(book_on_page, template, books_file):
         ) as file:
             file.write(rendered_page)
 
+    return args.template_path
+
 def main():
-    args = get_cmd_args()
-
-    env = Environment(
-        loader=FileSystemLoader('.'),
-        autoescape=select_autoescape(['html', 'xml'])
-    )
-
-    template = env.get_template(args.template_path)
-
-    on_reload(
-        book_on_page=args.book_on_page,
-        template=template,
-        books_file=args.books_file,
-    )
+    template_path = on_reload()
 
     server = Server()
-    server.watch(args.template_path, on_reload)
+    server.watch(template_path, on_reload)
     server.serve(root='.', default_filename='pages/index1.html')
 
 if __name__ == '__main__':
